@@ -1,5 +1,6 @@
 To be defined
 
+machine test
     events
       doorClosed
       drawOpened
@@ -9,12 +10,19 @@ To be defined
     end
 
     commands
-      unlockPanel
+      unlockPanel => be.hittepit.executor.Test
       lockPanel
       lockDoor
       unlockDoor
     end
 
+	start startState
+		startEvent => active
+	end
+	
+	finish finsihState
+	end
+	
     state idle
       actions {unlockDoor lockPanel}
       doorClosed => active
@@ -37,6 +45,6 @@ To be defined
       actions {unlockPanel lockDoor}
       panelClosed => idle
     end
-
+end
 
 http://blog.efftinge.de/2012/05/implementing-fowlers-state-machine-dsl.html

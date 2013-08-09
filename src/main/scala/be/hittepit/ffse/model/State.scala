@@ -9,6 +9,10 @@ class State(val name:String, val events:Map[Event,State]) {
 
 case class Event(name:String)
 
+case class Machine(name:String)
+
+case class Command(name:String,className:String)
+
 trait Executor{
   def execute(context:Context)
 }
