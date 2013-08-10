@@ -1,21 +1,29 @@
 package be.hittepit.ffse.model
 
-class State(val name:String, val events:Map[Event,State]) {
-	def addEvent(e:Event,s:State) = events.get(e) match {
-	  case None => new State(name,events+(e->s))
-	  case _:Some[_] => throw new Exception("state alreadu defined")
-	}
+//class State(val name:String, val events:Map[Event,State]) {
+//	def addEvent(e:Event,s:State) = events.get(e) match {
+//	  case None => new State(name,events+(e->s))
+//	  case _:Some[_] => throw new Exception("state alreadu defined")
+//	}
+//}
+
+object StateType extends Enumeration{
+  type StateType = Value
+  val START, END, STATE = Value
 }
+
+import StateType._
 
 case class Event(name:String)
 
-case class Machine(name:String)
+case class Engine(name:String,events:List[Event],commands:List[Command],startState:State,states:List[State])
 
 case class Command(name:String,className:String)
 
-trait Executor{
-  def execute(context:Context)
-}
+case class Transition(eventName:String,stateName:String)
 
-class Context(val startState:State,val states:Map[String,State]){
-}
+case class State(name:String, actionsName:List[String],transitions:List[Transition],stateType:StateType)
+
+//trait Executor{
+//  def execute(context:Context)
+//}
