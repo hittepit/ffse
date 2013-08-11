@@ -75,4 +75,21 @@ object FfseParser extends JavaTokenParsers {
 	}
 	
 	def engines:Parser[List[Engine]] = rep(engine) ^^ {case l => l}
+	
+	def parse(text:String):List[Engine] = {
+	  val r = parseAll(engines,text)
+	  if(r.successful){
+	    val engines = r.get.map({e => 
+	      e.initialize
+	      e
+	    })
+	    val errors = (List[Exception]()/:engines)({(errs,e) => e.errors:::errs})
+	    if(errors.isEmpty)
+	      engines
+	    else
+	      throw new Exception("TODO")
+	  }else {
+	    throw new Exception("Parse exception: "+r)
+	  }
+	}
 }
