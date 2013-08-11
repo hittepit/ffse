@@ -42,8 +42,8 @@ engines ::= <engine>*
 
 
 object FfseParser extends JavaTokenParsers {
-	val name = """\b(?!end)[a-zA-Z0-9]+""".r
-	val className = """\b(?!end)\b[a-zA-Z][\.a-zA-Z0-9]+""".r
+	val name = """(?!(end|events|commands|actions|start|state|finish|engine)\b)\b\w+\b""".r
+	val className = """(?!(end|events|commands|actions|start|state|finish|engine)\b)([a-zA-Z_$][a-zA-Z\d_$]*\.)*[a-zA-Z_$][a-zA-Z\d_$]*""".r
 	  
 	def commands:Parser[List[Command]] = "commands"~>rep(command)<~"end"
 	

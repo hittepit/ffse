@@ -43,16 +43,20 @@ class TestFfseParser extends FunSuite with MustMatchers{
 	test("events must return a list of events name"){
 	  val text = """events test1
 	    test2
-	    Test
+	    endEvent
+	    eventendNear
+	    eventEnd
 	    end"""
 	    
 	  val r = FfseParser.parseAll(FfseParser.events,text)
 	  r.successful must be(true)
 	  val events = r.get
-	  events must have size(3)
+	  events must have size(5)
 	  events must contain(Event("test1"))
-	  events must contain(Event("Test"))
 	  events must contain(Event("test2"))
+	  events must contain(Event("endEvent"))
+	  events must contain(Event("eventendNear"))
+	  events must contain(Event("eventEnd"))
 	}
 	
 	test("events with empty body must return an empty list"){
@@ -226,7 +230,6 @@ class TestFfseParser extends FunSuite with MustMatchers{
 			  end
 	    end"""
 	  val m = FfseParser.parseAll(FfseParser.engine,text)
-	  println(m)
 	  m.successful must be (true)
 	  val engine = m.get
 	  engine.name must be("test")
