@@ -14,6 +14,28 @@ object StateType extends Enumeration{
 
 import StateType._
 
+class EngineValidationError
+
+class UndefinedEventError(val eventName:String, val stateName:String) extends EngineValidationError{
+  override def toString = "State "+stateName+" uses an event "+eventName+" which was not defined as an event"
+}
+
+class UndefinedStateError(val eventName:String, val destinationName:String, val stateName:String) extends EngineValidationError{
+  override def toString = "State "+stateName+" defines an event "+eventName+" that leads to an unknown state "+destinationName
+}
+
+class UndefinedActionError(val actionName:String,val stateName:String) extends EngineValidationError{
+  override def toString = "State "+stateName+" uses action "+actionName+" which is not defined"
+}
+
+class ActionClassNotFound(val actionName:String, val className:String) extends EngineValidationError{
+  override def toString = "Class "+className+" not found for action "+actionName
+}
+
+class ActionClassWrongTypeError(val actionName:String, val className:String) extends EngineValidationError{
+  override def toString = "Class "+className+" for action "+actionName+" does not implements Executor"
+}
+
 case class Event(name:String)
 
 case class Engine(val name:String, val version:String, val events:List[Event],commands:List[Command],startState:State,states:List[State]){
@@ -27,15 +49,19 @@ case class Engine(val name:String, val version:String, val events:List[Event],co
 	    }
 	    if(! states.exists(s => s.name == t.stateName) && startState.name != t.stateName){
 	      errs = new IllegalArgumentException("In state "+state.name+" event "+t.eventName+" goes to "+t.stateName+", which was not defined")::errs
+	    }  
+	  }
+	  state.actionsName.foreach{actionName =>
+	    if(! commands.exists(c => c.name == actionName)){
+	      errs = new IllegalArgumentException("State "+state.name+" uses action "+actionName+" which is not defined")::errs
 	    }
-	     
 	  }
 	}
     
     check(startState)
     states.foreach(check(_))
     commands.foreach((c) => c.error match{
-      case Some(e) => errs = e::errs
+      case Some(e) => //errs = e::errs
       case _ =>
     })
     
@@ -46,7 +72,7 @@ case class Engine(val name:String, val version:String, val events:List[Event],co
 }
 
 case class Command(name:String,className:String){
-   private var err:Option[Exception] = None
+   private var err:Option[EngineValidationError] = None
   
   val actionClass:Class[Executor] = try {
     val c = Class.forName(className)
@@ -55,11 +81,11 @@ case class Command(name:String,className:String){
     if(mc <:< baseM){
       c.asInstanceOf[Class[Executor]]
     } else {
-      err = Some(new IllegalArgumentException(className+" does not implements Executor"))
+      err = Some(new ActionClassWrongTypeError(name,className))
       null
     }
   } catch {
-    case e:Exception => err = Some(e)
+    case e:ClassNotFoundException => err = Some(new ActionClassNotFound(name,className))
     					null
   } 
   
@@ -68,9 +94,7 @@ case class Command(name:String,className:String){
 
 case class Transition(eventName:String,stateName:String)
 
-case class State(name:String, actionsName:List[String],transitions:List[Transition],stateType:StateType){
-  
-}
+case class State(name:String, actionsName:List[String],transitions:List[Transition],stateType:StateType)
 
 trait Executor{
   def execute:Unit

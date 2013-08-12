@@ -19,12 +19,18 @@ class TestCommand extends FunSuite with MustMatchers with TestUtil{
 	test("if class cannot be found, error contains a ClassNotFoundException"){
 	  val c = Command("test","be.NeverExist")
 	  c.error must be('defined)
-	  c.error.get must be(anInstanceOf[ClassNotFoundException])
+	  c.error.get must be(anInstanceOf[ActionClassNotFound])
+	  val e = c.error.get.asInstanceOf[ActionClassNotFound]
+	  e.actionName must be("test")
+	  e.className must be("be.NeverExist")
 	}
 	
 	test("if class is not Executor, error contains a "){
 	  val c = Command("test","be.hittepit.ffse.model.TestCommand")
 	  c.error must be('defined)
-	  c.error.get must be(anInstanceOf[IllegalArgumentException])
+	  c.error.get must be(anInstanceOf[ActionClassWrongTypeError])
+	  val e = c.error.get.asInstanceOf[ActionClassWrongTypeError]
+	  e.actionName must be("test")
+	  e.className must be("be.hittepit.ffse.model.TestCommand")
 	}
 }
