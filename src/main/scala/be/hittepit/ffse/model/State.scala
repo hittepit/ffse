@@ -16,24 +16,24 @@ import StateType._
 
 class EngineValidationError
 
-class UndefinedEventError(val eventName:String, val stateName:String) extends EngineValidationError{
+case class UndefinedEventError(val eventName:String, val stateName:String) extends EngineValidationError{
   override def toString = "State "+stateName+" uses an event "+eventName+" which was not defined as an event"
 }
 
-class UndefinedStateError(val eventName:String, val destinationName:String, val stateName:String) extends EngineValidationError{
+case class UndefinedStateError(val eventName:String, val destinationName:String, val stateName:String) extends EngineValidationError{
   override def toString = "State "+stateName+" defines an event "+eventName+" that leads to an unknown state "+destinationName
 }
 
-class UndefinedActionError(val actionName:String,val stateName:String) extends EngineValidationError{
+case class UndefinedActionError(val actionName:String,val stateName:String) extends EngineValidationError{
   override def toString = "State "+stateName+" uses action "+actionName+" which is not defined"
 }
 
-class ActionClassNotFoundError(val actionName:String, val className:String) extends EngineValidationError{
+case class ActionClassNotFoundError(val actionName:String, val className:String) extends EngineValidationError{
   override def toString = "Class "+className+" not found for action "+actionName
 }
 
-class ActionClassWrongTypeError(val actionName:String, val className:String) extends EngineValidationError{
-  override def toString = "Class "+className+" for action "+actionName+" does not implements Executor"
+case class ActionClassWrongTypeError(val actionName:String, val className:String) extends EngineValidationError{
+  override def toString = "Class "+className+" for action "+actionName+" does not implement Executor"
 }
 
 case class Event(name:String)
@@ -68,7 +68,7 @@ case class Engine(val name:String, val version:String, val events:List[Event],co
     errs.isEmpty
   }
   
-  def errors:List[EngineValidationError] = errs
+  def errors:List[_ <: EngineValidationError] = errs
 }
 
 case class Command(name:String,className:String){
