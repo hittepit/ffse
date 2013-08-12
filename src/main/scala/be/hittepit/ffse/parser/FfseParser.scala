@@ -1,13 +1,13 @@
 package be.hittepit.ffse.parser
 
 import scala.util.parsing.combinator.JavaTokenParsers
-
 import be.hittepit.ffse.model.Command
 import be.hittepit.ffse.model.Engine
 import be.hittepit.ffse.model.Event
 import be.hittepit.ffse.model.State
 import be.hittepit.ffse.model.StateType
 import be.hittepit.ffse.model.Transition
+import be.hittepit.ffse.model.EngineValidationError
 
 /*
 name ::= [a-zA-Z0-9]+
@@ -87,7 +87,7 @@ object FfseParser extends JavaTokenParsers {
 	      e.initialize
 	      e
 	    })
-	    val errors = (List[Exception]()/:engines)({(errs,e) => e.errors:::errs})
+	    val errors = (List[EngineValidationError]()/:engines)({(errs,e) => e.errors:::errs})
 	    if(errors.isEmpty)
 	      engines
 	    else

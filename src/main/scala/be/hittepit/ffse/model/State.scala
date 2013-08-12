@@ -28,7 +28,7 @@ class UndefinedActionError(val actionName:String,val stateName:String) extends E
   override def toString = "State "+stateName+" uses action "+actionName+" which is not defined"
 }
 
-class ActionClassNotFound(val actionName:String, val className:String) extends EngineValidationError{
+class ActionClassNotFoundError(val actionName:String, val className:String) extends EngineValidationError{
   override def toString = "Class "+className+" not found for action "+actionName
 }
 
@@ -39,21 +39,21 @@ class ActionClassWrongTypeError(val actionName:String, val className:String) ext
 case class Event(name:String)
 
 case class Engine(val name:String, val version:String, val events:List[Event],commands:List[Command],startState:State,states:List[State]){
-  private var errs:List[Exception] = List()
+  private var errs:List[EngineValidationError] = List()
   
   def initialize:Boolean = {
 	def check(state:State){
 	  state.transitions.foreach{t =>
 	    if(! events.exists(e=> e.name == t.eventName)){
-	      errs = new IllegalArgumentException("In state "+state.name+" event "+t.eventName+" was not defined as an event")::errs
+	      errs = new UndefinedEventError(t.eventName,state.name)::errs
 	    }
 	    if(! states.exists(s => s.name == t.stateName) && startState.name != t.stateName){
-	      errs = new IllegalArgumentException("In state "+state.name+" event "+t.eventName+" goes to "+t.stateName+", which was not defined")::errs
+	      errs = new UndefinedStateError(t.eventName,t.stateName,state.name)::errs
 	    }  
 	  }
 	  state.actionsName.foreach{actionName =>
 	    if(! commands.exists(c => c.name == actionName)){
-	      errs = new IllegalArgumentException("State "+state.name+" uses action "+actionName+" which is not defined")::errs
+	      errs = new UndefinedActionError(actionName, state.name)::errs
 	    }
 	  }
 	}
@@ -61,14 +61,14 @@ case class Engine(val name:String, val version:String, val events:List[Event],co
     check(startState)
     states.foreach(check(_))
     commands.foreach((c) => c.error match{
-      case Some(e) => //errs = e::errs
+      case Some(e) => errs = e::errs
       case _ =>
     })
     
     errs.isEmpty
   }
   
-  def errors:List[Exception] = errs
+  def errors:List[EngineValidationError] = errs
 }
 
 case class Command(name:String,className:String){
@@ -85,7 +85,7 @@ case class Command(name:String,className:String){
       null
     }
   } catch {
-    case e:ClassNotFoundException => err = Some(new ActionClassNotFound(name,className))
+    case e:ClassNotFoundException => err = Some(new ActionClassNotFoundError(name,className))
     					null
   } 
   

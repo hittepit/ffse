@@ -14,8 +14,10 @@ class TestEngineValidation extends FunSuite with MustMatchers with TestUtil{
 		engine.initialize must be(false)
 		engine.errors must have size(1)
 		val e = engine.errors(0)
-		e must be (anInstanceOf[IllegalArgumentException])
-		e.getMessage() must be("In state next event unknown was not defined as an event")
+		e must be (anInstanceOf[UndefinedEventError])
+		val ex = e.asInstanceOf[UndefinedEventError]
+		ex.eventName must be("unknown")
+		ex.stateName must be("next")
 	}
 	test("engine initialization fails if a state's transition uses an unknown state"){
 		val events = List(Event("doit"),Event("go"))
@@ -26,8 +28,11 @@ class TestEngineValidation extends FunSuite with MustMatchers with TestUtil{
 		engine.initialize must be(false)
 		engine.errors must have size(1)
 		val e = engine.errors(0)
-		e must be (anInstanceOf[IllegalArgumentException])
-		e.getMessage() must be("In state next event go goes to unknown, which was not defined")
+		e must be (anInstanceOf[UndefinedStateError])
+		val ex = e.asInstanceOf[UndefinedStateError]
+		ex.stateName must be("next")
+		ex.destinationName must be("unknown")
+		ex.eventName must be("go")
 	}
 	test("engine initialization fails if a state's action uses an unknown command"){
 	  
