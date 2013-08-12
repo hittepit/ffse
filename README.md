@@ -1,6 +1,8 @@
 To be defined
 
 machine test
+	version 1.0.0
+
     events
       doorClosed
       drawOpened
@@ -10,10 +12,10 @@ machine test
     end
 
     commands
-      unlockPanel => be.hittepit.executor.Test
-      lockPanel
-      lockDoor
-      unlockDoor
+      unlockPanel => be.hittepit.executor.Test1
+      lockPanel => be.hittepit.executor.Test2
+      lockDoor => be.hittepit.executor.Test3
+      unlockDoor => be.hittepit.executor.Test4
     end
 
 	start startState

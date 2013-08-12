@@ -10,6 +10,20 @@ import be.hittepit.ffse.model.StateType
 import be.hittepit.ffse.model.State
 
 class TestFfseParser extends FunSuite with MustMatchers{
+	test("version 1.0.0 must return 1.0.0"){
+	  val text = "version 1.0.0"
+	  val r = FfseParser.parseAll(FfseParser.version,text)
+	  r.successful must be(true)
+	  r.get must be("1.0.0")
+	}
+	
+	test("version 2 must return 2"){
+	  val text = "version 2"
+	  val r = FfseParser.parseAll(FfseParser.version,text)
+	  r.successful must be(true)
+	  r.get must be("2")
+	}
+  
 	test("command must be parsed"){
 	  val text = "justDoIt => be.hittepit.DoIt"
 	  val r = FfseParser.parseAll(FfseParser.command, text)
@@ -201,6 +215,8 @@ class TestFfseParser extends FunSuite with MustMatchers{
 	test("single engine with correct name must be created"){
 	  val text = """
 	    engine test
+			  version 1.0
+	    
 			  events
 			  	e1 
 			  	e2 
@@ -233,6 +249,7 @@ class TestFfseParser extends FunSuite with MustMatchers{
 	  m.successful must be (true)
 	  val engine = m.get
 	  engine.name must be("test")
+	  engine.version must be("1.0")
 	  engine.commands must have size(2)
 	  engine.commands must contain(Command("act1","be.test.Action1"))
 	  engine.commands must contain(Command("act2","be.test.Action2"))

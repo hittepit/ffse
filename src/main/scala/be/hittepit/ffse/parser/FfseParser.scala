@@ -34,7 +34,9 @@ endState ::= "finish" <name> [<actions>] "end"
 
 state ::= "state" <name> <stateBody> "end"
 
-engine ::= "engine" <name> [<events>] [<commands>] [<states>] "end"
+version::= "version" \d+(/.\d+)*
+
+engine ::= "engine" <name> <version> [<events>] [<commands>] [<states>] "end"
 
 engines ::= <engine>*
 
@@ -69,9 +71,11 @@ object FfseParser extends JavaTokenParsers {
 	
 	def state:Parser[State] = "state"~name~stateBody~"end" ^^ {case "state"~n~sb~"end" => State(n,sb._1,sb._2,StateType.STATE)}
 	
-	def engine:Parser[Engine] = "engine"~>name~events~opt(commands)~startState~rep(state|endState)<~"end" ^^ {
-	  case n~es~Some(cs)~ss~sts => Engine(n,es,cs,ss,sts)
-	  case n~es~None~ss~sts => Engine(n,es,Nil,ss,sts)
+	def version:Parser[String] = "version"~>"""\d+(\.\d+)*""".r
+	
+	def engine:Parser[Engine] = "engine"~>name~version~events~opt(commands)~startState~rep(state|endState)<~"end" ^^ {
+	  case n~v~es~Some(cs)~ss~sts => Engine(n,v,es,cs,ss,sts)
+	  case n~v~es~None~ss~sts => Engine(n,v,es,Nil,ss,sts)
 	}
 	
 	def engines:Parser[List[Engine]] = rep(engine) ^^ {case l => l}

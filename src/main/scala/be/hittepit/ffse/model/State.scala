@@ -16,7 +16,7 @@ import StateType._
 
 case class Event(name:String)
 
-case class Engine(val name:String, val events:List[Event],commands:List[Command],startState:State,states:List[State]){
+case class Engine(val name:String, val version:String, val events:List[Event],commands:List[Command],startState:State,states:List[State]){
   def initialize{
     
   }
