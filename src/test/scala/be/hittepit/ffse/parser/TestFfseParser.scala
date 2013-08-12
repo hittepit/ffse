@@ -241,7 +241,7 @@ class TestFfseParser extends FunSuite with MustMatchers{
 			  state st2
 			  	e2 => fin
 			  end
-	    
+
 			  finish fin
 			  end
 	    end"""
@@ -264,14 +264,74 @@ class TestFfseParser extends FunSuite with MustMatchers{
 	  states must contain(State("st2",Nil,List(Transition("e2","fin")),StateType.STATE))
 	  states must contain(State("fin",Nil,Nil,StateType.END))
 	}
+
+	test("ParseException must be raised if there is parse exception"){
+	  val text = """
+	    engine e1
+			  version 1.0
+	    
+			  events
+			  	next
+			  end
+	    
+			  start begin
+			  	next => stop
+			  end
+	    
+			  finish stop
+			  end
+	    end
+	    
+	    engine e2
+			  events
+			  	next
+			  end
+	    
+			  start begin
+			  	next => end
+			  end
+	    
+			  finish end
+			  end
+	    end
+	    """
+	  val e = evaluating(FfseParser.parse(text)) must produce[ParseException]
+	}
+
+	test("ValidationException must be raised if there is parse is valid, but validation fails"){
+	  val text = """
+	    engine e1
+			  version 1.0
+	    
+			  events
+			  	nexta
+			  end
+	    
+			  start begin
+			  	next => stop
+			  end
+	    
+			  finish stop
+			  end
+	    end
+	    
+	    engine e2
+			  version 2.0
+	    
+			  events
+			  	next
+			  end
+	    
+			  start begin
+			  	next => stop
+			  end
+	    
+			  finish stopit
+			  end
+	    end
+	    """
+	  val e = evaluating(FfseParser.parse(text)) must produce[ValidationException]
+	}
 	
-//	test("list of engines with correct name must be created"){
-//	  val text = """engine test1 end
-//	    engine    test2  end"""
-//	  val m = FfseParser.parseAll(FfseParser.engines,text)
-//	  m.isEmpty must be (false)
-//	  m.get must have size(2)
-//	  m.get must contain (Engine("test1"))  
-//	  m.get must contain (Engine("test2"))  
-//	}
+	test("execption if engine name duplicated"){}
 }

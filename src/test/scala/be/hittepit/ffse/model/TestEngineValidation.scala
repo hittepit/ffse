@@ -12,7 +12,7 @@ class TestEngineValidation extends FunSuite with MustMatchers with TestUtil{
 		val endState = State("end",Nil,Nil,StateType.END)
 		val state = State("next",Nil,List(Transition("unknown","end")),StateType.STATE)
 		val engine = Engine("test","1.0",events,Nil,startState,List(endState,state))
-		engine.initialize must be(false)
+		engine.hasErrors must be(true)
 		engine.errors must have size(1)
 		val e = engine.errors(0)
 		e must be (anInstanceOf[UndefinedEventError])
@@ -26,7 +26,7 @@ class TestEngineValidation extends FunSuite with MustMatchers with TestUtil{
 		val endState = State("end",Nil,Nil,StateType.END)
 		val state = State("next",Nil,List(Transition("go","unknown")),StateType.STATE)
 		val engine = Engine("test","1.0",events,Nil,startState,List(endState,state))
-		engine.initialize must be(false)
+		engine.hasErrors must be(true)
 		engine.errors must have size(1)
 		val e = engine.errors(0)
 		e must be (anInstanceOf[UndefinedStateError])
@@ -42,7 +42,7 @@ class TestEngineValidation extends FunSuite with MustMatchers with TestUtil{
 		val endState = State("end",Nil,Nil,StateType.END)
 		val state = State("next",List("unknown"),List(Transition("go","end")),StateType.STATE)
 		val engine = Engine("test","1.0",events,commands,startState,List(endState,state))
-		engine.initialize must be(false)
+		engine.hasErrors must be(true)
 		engine.errors must have size(1)
 		
 		engine.errors(0) must be(anInstanceOf[UndefinedActionError])
@@ -58,12 +58,12 @@ class TestEngineValidation extends FunSuite with MustMatchers with TestUtil{
 		val endState = State("end",Nil,Nil,StateType.END)
 		val state = State("next",Nil,List(Transition("go","end")),StateType.STATE)
 		val engine = Engine("test","1.0",events,commands,startState,List(endState,state))
-		engine.initialize must be(false)
+		engine.hasErrors must be(true)
 		engine.errors must have size(1)
 		
-		engine.errors(0) must be(anInstanceOf[ActionClassWrongTypeError])
+		engine.errors(0) must be(anInstanceOf[ActionClassWrongTypeErrorInCommand])
 		
-		val e = engine.errors(0).asInstanceOf[ActionClassWrongTypeError]
+		val e = engine.errors(0).asInstanceOf[ActionClassWrongTypeErrorInCommand]
 		e.actionName must be("action")
 		e.className must be("java.lang.String")
 	}
@@ -74,14 +74,14 @@ class TestEngineValidation extends FunSuite with MustMatchers with TestUtil{
 		val endState = State("end",Nil,Nil,StateType.END)
 		val state = State("next",Nil,List(Transition("go","yoyo")),StateType.STATE)
 		val engine = Engine("test","1.0",events,commands,startState,List(endState,state))
-		engine.initialize must be(false)
+		engine.hasErrors must be(true)
 		val errors = engine.errors
 		errors must have size(5)
 		
-		errors must contain(UndefinedEventError("doit", "start").asInstanceOf[EngineValidationError])
-		errors must contain(UndefinedStateError("go", "yoyo", "next").asInstanceOf[EngineValidationError])
-		errors must contain(UndefinedActionError("action", "start").asInstanceOf[EngineValidationError])
-		errors must contain(ActionClassNotFoundError("action2", "java.lang.Toto").asInstanceOf[EngineValidationError])
-		errors must contain(ActionClassWrongTypeError("action1", "java.lang.String").asInstanceOf[EngineValidationError])
+		errors must contain(UndefinedEventError("test","doit", "start").asInstanceOf[EngineValidationError])
+		errors must contain(UndefinedStateError("test","go", "yoyo", "next").asInstanceOf[EngineValidationError])
+		errors must contain(UndefinedActionError("test","action", "start").asInstanceOf[EngineValidationError])
+		errors must contain(ActionClassNotFoundErrorInCommand("test","action2", "java.lang.Toto").asInstanceOf[EngineValidationError])
+		errors must contain(ActionClassWrongTypeErrorInCommand("test","action1", "java.lang.String").asInstanceOf[EngineValidationError])
 	}
 }

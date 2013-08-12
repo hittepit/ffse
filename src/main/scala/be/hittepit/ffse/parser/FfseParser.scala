@@ -8,6 +8,7 @@ import be.hittepit.ffse.model.State
 import be.hittepit.ffse.model.StateType
 import be.hittepit.ffse.model.Transition
 import be.hittepit.ffse.model.EngineValidationError
+import be.hittepit.ffse.model.EngineValidationError
 
 /*
 name ::= [a-zA-Z0-9]+
@@ -42,6 +43,10 @@ engines ::= <engine>*
 
 */
 
+class ParseException(val msg:String) extends Exception(msg)
+class ValidationException(val errors:List[EngineValidationError]) extends Exception("Validation errors"){
+  override def toString = "Validation errors -->\n"+((""/:errors)((s,e) => s+e.toString()+"\n"))
+}
 
 object FfseParser extends JavaTokenParsers {
 	val name = """(?!(end|events|commands|actions|start|state|finish|engine)\b)\b\w+\b""".r
@@ -82,18 +87,16 @@ object FfseParser extends JavaTokenParsers {
 	
 	def parse(text:String):List[Engine] = {
 	  val r = parseAll(engines,text)
+	 
 	  if(r.successful){
-	    val engines = r.get.map({e => 
-	      e.initialize
-	      e
-	    })
+	    val engines = r.get
 	    val errors = (List[EngineValidationError]()/:engines)({(errs,e) => e.errors:::errs})
 	    if(errors.isEmpty)
 	      engines
 	    else
-	      throw new Exception("TODO")
+	      throw new ValidationException(errors)
 	  }else {
-	    throw new Exception("Parse exception: "+r)
+	    throw new ParseException("Parse exception: "+r)
 	  }
 	}
 }
