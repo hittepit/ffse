@@ -7,35 +7,31 @@ object StateType extends Enumeration{
 
 import StateType._
 
-class EngineValidationError
-
-case class UndefinedEventError(val engine:String, val eventName:String, val stateName:String) extends EngineValidationError{
-  override def toString = "Engine "+engine+": state "+stateName+" uses an event "+eventName+" which was not defined as an event"
-}
-
-case class UndefinedStateError(val engine:String, val eventName:String, val destinationName:String, val stateName:String) extends EngineValidationError{
-  override def toString = "Engine "+engine+": state "+stateName+" defines an event "+eventName+" that leads to an unknown state "+destinationName
-}
-
-case class UndefinedActionError(val engine:String, val actionName:String,val stateName:String) extends EngineValidationError{
-  override def toString = "Engine "+engine+": state "+stateName+" uses action "+actionName+" which is not defined"
-}
-
-case class ActionClassNotFoundError(val actionName:String, val className:String) extends EngineValidationError
-
-case class ActionClassNotFoundErrorInCommand(val engine:String, val actionName:String, val className:String) extends EngineValidationError{
-  override def toString = "Engine "+engine+": class "+className+" not found for action "+actionName
-}
-
-case class ActionClassWrongTypeError(val actionName:String, val className:String) extends EngineValidationError
-
-case class ActionClassWrongTypeErrorInCommand(val engine:String, val actionName:String, val className:String) extends EngineValidationError{
-  override def toString = "Engine "+engine+": class "+className+" for action "+actionName+" does not implement Executor"
-}
-
 case class Event(name:String)
 
-case class Engine(val name:String, val version:String, val events:List[Event],commands:List[Command],startState:State,states:List[State]){
+case class Engine(val name:String, val version:String, val events:List[Event],val commands:List[Command],val startState:State,val states:List[State]){
+  class EngineExecutorBuilder(val fromStateName:String){
+    val fromState = (startState::states).find(s => s.name==fromStateName) match{
+      case Some(s) => s
+      case None => throw new Exception(fromStateName+" not found in this engine")
+    }
+    var eventName:Option[String] = None
+    
+    def when(eventName:String) = {
+      this.eventName = Some(eventName)
+      this
+    }
+    
+    def prospect = this.eventName match{
+      case None => throw new Exception("No event defined. Use when.")
+      case Some(e) =>
+      fromState.transitions.find(t => t.eventName == e) match {
+        case Some(t) => t.stateName
+        case None => throw new Exception("event "+e+" not found on state "+fromStateName)
+      }
+    }
+  }
+  
   private var errs:List[EngineValidationError] = List()
   
   initialize
@@ -66,8 +62,12 @@ case class Engine(val name:String, val version:String, val events:List[Event],co
     })
   }
   
+  val engineId=name+"::"+version
+  
   def hasErrors = ! errs.isEmpty
   def errors:List[_ <: EngineValidationError] = errs
+  
+  def from(fromStateName:String) = new EngineExecutorBuilder(fromStateName)
 }
 
 case class Command(name:String,className:String){
