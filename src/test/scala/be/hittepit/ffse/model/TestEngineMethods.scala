@@ -29,24 +29,20 @@ class TestEngineMethods extends MustMatchers with FunSuite with BeforeAndAfter{
 	}
   
 	test("from when prospect returns the target state without executing any action"){
-	  	var result = engine.from("start").when("doit").prospect
+	  	var result = engine.from("start").when("doit")
 	  	result must be("next")
 	  	MockInvocation.invocations must be(0)
 	  	
-	  	result = engine.from("next").when("go").prospect
+	  	result = engine.from("next").when("go")
 	  	result must be("end")
 	  	MockInvocation.invocations must be(0)
 	}
 	
 	test("from when prospect throws an exception if from state does not exist and does not execute any action"){
-		evaluating(engine.from("notdefined").when("go").prospect) must produce[Exception]
+		evaluating(engine.from("notdefined").when("go")) must produce[Exception]
 	}
 	
 	test("from when prospect throws an exception if event is not handle be from state and does not execute any action"){
-		evaluating(engine.from("next").when("gone").prospect) must produce[Exception]
-	}
-	
-	test("from when prospect throws an exception if event was not defined and does not execute any action"){
-	  evaluating(engine.from("next").prospect) must produce[Exception]
+		evaluating(engine.from("next").when("gone")) must produce[Exception]
 	}
 }

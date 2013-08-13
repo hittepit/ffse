@@ -18,16 +18,9 @@ case class Engine(val name:String, val version:String, val events:List[Event],va
     var eventName:Option[String] = None
     
     def when(eventName:String) = {
-      this.eventName = Some(eventName)
-      this
-    }
-    
-    def prospect = this.eventName match{
-      case None => throw new Exception("No event defined. Use when.")
-      case Some(e) =>
-      fromState.transitions.find(t => t.eventName == e) match {
+      fromState.transitions.find(t => t.eventName == eventName) match {
         case Some(t) => t.stateName
-        case None => throw new Exception("event "+e+" not found on state "+fromStateName)
+        case None => throw new Exception("event "+eventName+" not found on state "+fromStateName)
       }
     }
   }
@@ -68,6 +61,15 @@ case class Engine(val name:String, val version:String, val events:List[Event],va
   def errors:List[_ <: EngineValidationError] = errs
   
   def from(fromStateName:String) = new EngineExecutorBuilder(fromStateName)
+  
+  def actions(stateName:String):List[Class[Executor]] = (startState::states).find(s => s.name==stateName) match{
+    case None => Nil
+    case Some(state) => state.actionsName.map{an => commands.find{c => c.name==an} match{
+      							case None => throw new Exception("Pas possible, voir validation")
+      							case Some(c) => c.actionClass
+    						}
+    					}
+  }
 }
 
 case class Command(name:String,className:String){
