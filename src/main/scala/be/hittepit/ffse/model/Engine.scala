@@ -11,15 +11,27 @@ case class Event(name:String)
 
 case class Engine(val name:String, val version:String, val events:List[Event],val commands:List[Command],val startState:State,val states:List[State]){
   class EngineExecutorBuilder(val fromStateName:String){
-    val fromState = (startState::states).find(s => s.name==fromStateName) match{
-      case Some(s) => s
-      case None => throw new Exception(fromStateName+" not found in this engine")
-    }
+    val fromState = findState(fromStateName)
+
     var eventName:Option[String] = None
     
     def when(eventName:String) = {
       fromState.transitions.find(t => t.eventName == eventName) match {
         case Some(t) => t.stateName
+        case None => throw new Exception("event "+eventName+" not found on state "+fromStateName)
+      }
+    }
+    
+    def execute(eventName:String,context:Map[String,Any]) = {
+      fromState.transitions.find(t => t.eventName == eventName) match {
+        case Some(t) => val nextState = findState(t.stateName)
+        				val commandClasses = nextState.actionsName.map(findCommand(_))
+        				commandClasses.foreach{ command =>
+        					val c = Class.forName(command.className)
+        					val commandInstance = c.newInstance().asInstanceOf[Executor]
+        					commandInstance.execute(context)
+        				}
+          				nextState.name
         case None => throw new Exception("event "+eventName+" not found on state "+fromStateName)
       }
     }
@@ -53,6 +65,16 @@ case class Engine(val name:String, val version:String, val events:List[Event],va
       case Some(ActionClassWrongTypeError(a,c)) => errs = ActionClassWrongTypeErrorInCommand(name,a,c)::errs
       case _ =>
     })
+  }
+  
+  private def findState(stateName:String) = (startState::states).find(s => s.name==stateName) match{
+      case Some(s) => s
+      case None => throw new Exception(stateName+" not found in this engine")
+    }
+  
+  private def findCommand(commandName:String) = commands.find(c => c.name == commandName) match{
+    case Some(command) => command
+    case None => throw new Exception(commandName+" not found in this engine")
   }
   
   val engineId=name+"::"+version
@@ -98,5 +120,5 @@ case class Transition(eventName:String,stateName:String)
 case class State(name:String, actionsName:List[String],transitions:List[Transition],stateType:StateType)
 
 trait Executor{
-  def execute:Unit
+  def execute(context:Map[String,Any]):Unit
 }

@@ -5,7 +5,7 @@ import org.scalatest.matchers.MustMatchers
 import be.hittepit.ffse.util.TestUtil
 
 class TestExecutor extends Executor{
-  def execute = println("ok")
+  def execute(context:Map[String,Any]) = println("ok")
 }
 
 class TestCommand extends FunSuite with MustMatchers with TestUtil{
