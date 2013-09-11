@@ -9,24 +9,25 @@ TODO
 Example definition (not correct)
 
     engine test
+    	(Engine de test juste pour avoir une idée du fichier)
     	version 1.0.0
 
         events
-          doorClosed
-          drawOpened
+          doorClosed (Quand la porte se ferme)
+          drawOpened (Quand la porte s'ouvre)
           lightOn   
           doorOpened
           panelClosed
         end
 
         commands
-          unlockPanel => be.hittepit.executor.Test1
+          unlockPanel => be.hittepit.executor.Test1 (Je ne sais ce que ça fait, mais ça craint)
           lockPanel => be.hittepit.executor.Test2
           lockDoor => be.hittepit.executor.Test3
           unlockDoor => be.hittepit.executor.Test4
         end
 
-    	start startState
+    	start startState (état de départ)
 	    	startEvent => active
 	    end
 	

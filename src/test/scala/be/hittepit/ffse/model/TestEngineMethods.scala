@@ -24,7 +24,7 @@ class TestEngineMethods extends MustMatchers with FunSuite with BeforeAndAfter{
 		val startState = State("start",Nil,List(Transition("doit","next")),StateType.START)
 		val endState = State("end",Nil,Nil,StateType.END)
 		val state = State("next",List("action"),List(Transition("go","end")),StateType.STATE)
-		Engine("test","1.0",events,commands,startState,List(endState,state))
+		Engine("test",None,"1.0",events,commands,startState,List(endState,state))
 	}
 	
 	before{

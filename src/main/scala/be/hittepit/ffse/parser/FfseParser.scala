@@ -15,6 +15,8 @@ name ::= [a-zA-Z0-9]+
 
 className ::= [a-zA-Z0-9]+
 
+comment ::= (<text>)
+
 events ::= "events" <name>* "end"
 
 commands ::= "commands" <command>* "end"
@@ -37,7 +39,7 @@ state ::= "state" <name> <stateBody> "end"
 
 version::= "version" \d+(/.\d+)*
 
-engine ::= "engine" <name> <version> [<events>] [<commands>] [<states>] "end"
+engine ::= "engine" <name> [comment] <version> [<events>] [<commands>] [<states>] "end"
 
 engines ::= <engine>*
 
@@ -52,6 +54,8 @@ object FfseParser extends JavaTokenParsers {
 	val name = """(?!(end|events|commands|actions|start|state|finish|engine)\b)\b\w+\b""".r
 	val className = """(?!(end|events|commands|actions|start|state|finish|engine)\b)([a-zA-Z_$][a-zA-Z\d_$]*\.)*[a-zA-Z_$][a-zA-Z\d_$]*""".r
 	  
+	def comment:Parser[String] = "("~> """[^\)]+""".r <~")"
+	
 	def commands:Parser[List[Command]] = "commands"~>rep(command)<~"end"
 	
 	def command:Parser[Command] = name~"=>"~className ^^ {case n~"=>"~c => Command(n,c)}
@@ -78,9 +82,9 @@ object FfseParser extends JavaTokenParsers {
 	
 	def version:Parser[String] = "version"~>"""\d+(\.\d+)*""".r
 	
-	def engine:Parser[Engine] = "engine"~>name~version~events~opt(commands)~startState~rep(state|endState)<~"end" ^^ {
-	  case n~v~es~Some(cs)~ss~sts => Engine(n,v,es,cs,ss,sts)
-	  case n~v~es~None~ss~sts => Engine(n,v,es,Nil,ss,sts)
+	def engine:Parser[Engine] = "engine"~>name~opt(comment)~version~events~opt(commands)~startState~rep(state|endState)<~"end" ^^ {
+	  case n~c~v~es~Some(cs)~ss~sts => Engine(n,c,v,es,cs,ss,sts)
+	  case n~c~v~es~None~ss~sts => Engine(n,c,v,es,Nil,ss,sts)
 	}
 	
 	def engines:Parser[List[Engine]] = rep(engine) ^^ {case l => l}

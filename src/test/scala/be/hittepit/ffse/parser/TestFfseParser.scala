@@ -249,6 +249,62 @@ class TestFfseParser extends FunSuite with MustMatchers{
 	  m.successful must be (true)
 	  val engine = m.get
 	  engine.name must be("test")
+	  engine.comment must be(None)
+	  engine.version must be("1.0")
+	  engine.commands must have size(2)
+	  engine.commands must contain(Command("act1","be.test.Action1"))
+	  engine.commands must contain(Command("act2","be.test.Action2"))
+	  engine.events must have size(3)
+	  engine.events must contain(Event("e1"))
+	  engine.events must contain(Event("e2"))
+	  engine.events must contain(Event("e3"))
+	  engine.startState must be(State("begin",Nil,List(Transition("e1","st1")),StateType.START))
+	  val states = engine.states
+	  states must have size(3)
+	  states must contain(State("st1",List("act1","act2"),List(Transition("e2","fin"),Transition("e3","st2")),StateType.STATE))
+	  states must contain(State("st2",Nil,List(Transition("e2","fin")),StateType.STATE))
+	  states must contain(State("fin",Nil,Nil,StateType.END))
+	}
+	
+	test("single engine with correct name and comment must be created"){
+	  val text = """
+	    engine test
+			  (Ceci est un test élémentaire)
+			  version 1.0
+	    
+			  events
+			  	e1 
+			  	e2 
+			  	e3
+			  end
+	    
+			  commands
+			  	act1 => be.test.Action1
+			  	act2 => be.test.Action2
+			  end
+	    
+			  start begin
+			  	e1 => st1
+			  end
+	    
+			  state st1
+			  	actions{act1 act2}
+			  	e2 => fin
+			  	e3 => st2
+			  end
+	    
+			  state st2
+			  	e2 => fin
+			  end
+
+			  finish fin
+			  end
+	    end"""
+	  val m = FfseParser.parseAll(FfseParser.engine,text)
+	  m.successful must be (true)
+	  val engine = m.get
+	  engine.name must be("test")
+	  engine.comment must be(Some("Ceci est un test élémentaire"))
 	  engine.version must be("1.0")
 	  engine.commands must have size(2)
 	  engine.commands must contain(Command("act1","be.test.Action1"))

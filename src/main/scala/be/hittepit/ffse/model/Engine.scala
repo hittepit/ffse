@@ -9,7 +9,7 @@ import StateType._
 
 case class Event(name:String)
 
-case class Engine(val name:String, val version:String, val events:List[Event],val commands:List[Command],val startState:State,val states:List[State]){
+case class Engine(val name:String, val comment:Option[String],val version:String, val events:List[Event],val commands:List[Command],val startState:State,val states:List[State]){
   class EngineExecutorBuilder(val fromStateName:String){
     val fromState = findState(fromStateName)
 
