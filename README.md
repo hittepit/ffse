@@ -8,7 +8,7 @@ TODO
 
 Example definition (not correct)
 
-    machine test
+    engine test
     	version 1.0.0
 
         events
