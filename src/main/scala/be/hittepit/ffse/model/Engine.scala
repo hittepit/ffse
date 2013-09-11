@@ -82,6 +82,8 @@ case class Engine(val name:String, val version:String, val events:List[Event],va
   def hasErrors = ! errs.isEmpty
   def errors:List[_ <: EngineValidationError] = errs
   
+  def start = startState.name
+  
   def from(fromStateName:String) = new EngineExecutorBuilder(fromStateName)
   
   def actions(stateName:String):List[Class[Executor]] = (startState::states).find(s => s.name==stateName) match{
