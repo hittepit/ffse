@@ -1,36 +1,36 @@
 package be.hittepit.ffse.model
 
 import org.scalatest.FunSuite
-import org.scalatest.matchers.MustMatchers
 import be.hittepit.ffse.util.TestUtil
+import org.scalatest.matchers.ShouldMatchers
 
 class TestExecutor extends Executor{
   def execute(context:Map[String,Any]) = println("ok")
 }
 
-class TestCommand extends FunSuite with MustMatchers with TestUtil{
+class TestCommand extends FunSuite with ShouldMatchers with TestUtil{
 	
-	test("class must be found if it exists"){
+	test("class should be found if it exists"){
 	  val c = Command("test","be.hittepit.ffse.model.TestExecutor")
-	  c.error must be(None)
-	  c.actionClass must be((new TestExecutor()).getClass())
+	  c.error should be(None)
+	  c.actionClass should be((new TestExecutor()).getClass())
 	}
 	
 	test("if class cannot be found, error contains a ActionClassNotFoundError"){
 	  val c = Command("test","be.NeverExist")
-	  c.error must be('defined)
-	  c.error.get must be(anInstanceOf[ActionClassNotFoundError])
+	  c.error should be('defined)
+	  c.error.get should be(anInstanceOf[ActionClassNotFoundError])
 	  val e = c.error.get.asInstanceOf[ActionClassNotFoundError]
-	  e.actionName must be("test")
-	  e.className must be("be.NeverExist")
+	  e.actionName should be("test")
+	  e.className should be("be.NeverExist")
 	}
 	
 	test("if class is not Executor, error contains a ActionClassWrongTypeError"){
 	  val c = Command("test","be.hittepit.ffse.model.TestCommand")
-	  c.error must be('defined)
-	  c.error.get must be(anInstanceOf[ActionClassWrongTypeError])
+	  c.error should be('defined)
+	  c.error.get should be(anInstanceOf[ActionClassWrongTypeError])
 	  val e = c.error.get.asInstanceOf[ActionClassWrongTypeError]
-	  e.actionName must be("test")
-	  e.className must be("be.hittepit.ffse.model.TestCommand")
+	  e.actionName should be("test")
+	  e.className should be("be.hittepit.ffse.model.TestCommand")
 	}
 }

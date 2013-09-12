@@ -1,8 +1,8 @@
 package be.hittepit.ffse.model
 
-import org.scalatest.matchers.MustMatchers
 import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
+import org.scalatest.matchers.ShouldMatchers
 
 object MockInvocation{
   var invocations = 0
@@ -17,7 +17,7 @@ class MockTestExecutor extends Executor{
   }
 }
 
-class TestEngineMethods extends MustMatchers with FunSuite with BeforeAndAfter{
+class TestEngineMethods extends FunSuite with ShouldMatchers with BeforeAndAfter{
 	val engine = {
 	  	val events = List(Event("doit"),Event("go"))
 		val commands = List(Command("action","be.hittepit.ffse.model.MockTestExecutor"))
@@ -33,43 +33,43 @@ class TestEngineMethods extends MustMatchers with FunSuite with BeforeAndAfter{
   
 	test("from when returns the target state without executing any action"){
 	  	var result = engine.from("start").when("doit")
-	  	result must be("next")
-	  	MockInvocation.invocations must be(0)
+	  	result should be("next")
+	  	MockInvocation.invocations should be(0)
 	  	
 	  	result = engine.from("next").when("go")
-	  	result must be("end")
-	  	MockInvocation.invocations must be(0)
+	  	result should be("end")
+	  	MockInvocation.invocations should be(0)
 	}
 	
 	test("from when throws an exception if from state does not exist and does not execute any action"){
-		evaluating(engine.from("notdefined").when("go")) must produce[Exception]
+		evaluating(engine.from("notdefined").when("go")) should produce[Exception]
 	}
 	
 	test("from when throws an exception if event is not handle be from state and does not execute any action"){
-		evaluating(engine.from("next").when("gone")) must produce[Exception]
+		evaluating(engine.from("next").when("gone")) should produce[Exception]
 	}
 	
 	test("from execute returns the target after having executed the actions"){
 	  	var result = engine.from("start").execute("doit",Map())
-	  	result must be("next")
-	  	MockInvocation.invocations must be(1)
+	  	result should be("next")
+	  	MockInvocation.invocations should be(1)
 	  	
 	  	result = engine.from("next").execute("go",Map())
-	  	result must be("end")
-	  	MockInvocation.invocations must be(1)
+	  	result should be("end")
+	  	MockInvocation.invocations should be(1)
 	}
 	
-	test("context must be passed to executor"){
+	test("context should be passed to executor"){
 	  	var result = engine.from("start").execute("doit",Map("invocation"->100))
-	  	result must be("next")
-	  	MockInvocation.invocations must be(100)
+	  	result should be("next")
+	  	MockInvocation.invocations should be(100)
 	}
 	
 	test("from execute throws an exception if from state does not exist and does not execute any action"){
-		evaluating(engine.from("notdefined").execute("go",Map())) must produce[Exception]
+		evaluating(engine.from("notdefined").execute("go",Map())) should produce[Exception]
 	}
 	
 	test("from execute throws an exception if event is not handle be from state and does not execute any action"){
-		evaluating(engine.from("next").execute("gone",Map())) must produce[Exception]
+		evaluating(engine.from("next").execute("gone",Map())) should produce[Exception]
 	}
 }
